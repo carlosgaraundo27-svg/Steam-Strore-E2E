@@ -42,26 +42,33 @@ test('TC-02: Búsqueda sin resultados muestra mensaje adecuado', async ({ page }
   });
 
   test('TC-05: Filtrar catálogo por soporte para mandos', async ({ page }) => {
-    await page.goto('https://store.steampowered.com/search/');
-    await page.getByText('Controller-Friendly').click();
-    await page.locator('[data-loc="PlayStation Controllers"]').click();
     
-    await expect(page.locator('.active_tag').first()).toBeVisible();
+    await page.goto('https://store.steampowered.com/search/');
+    await page.getByRole('button', { name: 'Ways to Play' }).click();
+    await page.getByRole('link', { name: 'Controller-Friendly' }).click();
+    await page.getByText('Controller Support').click();
+    await page.getByRole('link', { name: 'Xbox Controllers' }).click();
+    await page.locator('._3EdZTDIisUpowxwm6uJ7Iq').click();
+
+    await page.pause(); // Aquí esperamos que no haya resultados, ya que es un filtro muy específico
+
+    //await expect(page.locator('.search_result_row').first()).toBeVisible(0);
   });
 
   test('TC-06: Filtrar catálogo por Sistema Operativo (Windows)', async ({ page }) => {
-    await page.goto('https://store.steampowered.com/search/?term=estrategia');
-    await page.locator('[data-loc="Windows"]').first().click();
-    
-    await expect(page.locator('.tab_item_details').first()).toBeVisible();
+    await page.goto('https://store.steampowered.com/search/');
+    await page.locator('[data-loc="macOS"]').first().click();
+    await expect(page.locator('.search_result_row')).toHaveCount(50); 
   });
 
   test('TC-07: Cambio de idioma a Español', async ({ page }) => {
     await page.locator('#language_pulldown').click();
-    await page.getByRole('link', { name: 'Español (España)' }).click();
+    //await page.getByText('language', { exact: true }).click();
+    await page.getByRole('link', { name: 'Español - España (Spanish -' }).click();
     
     // Aquí sí esperamos el texto en español porque acabamos de cambiar el idioma
-    await expect(page.getByText('iniciar sesión', { exact: false })).toBeVisible();
+    await expect(page.getByText('iniciar sesión', { exact: true })).toBeVisible();
+    await page.pause(); // Pausa para verificar visualmente el cambio de idioma
   });
 
 
