@@ -71,5 +71,75 @@ test('TC-02: Búsqueda sin resultados muestra mensaje adecuado', async ({ page }
     await page.pause(); // Pausa para verificar visualmente el cambio de idioma
   });
 
+  test('TC-08: Validación del Age Gate (Restricción de Edad)', async ({ page }) => {
+await page.goto('https://store.steampowered.com/app/1091500/Cyberpunk_2077/');
+
+const ageYear = page.locator('#ageYear');
+
+if (await ageYear.isVisible().catch(() => false)) {
+await ageYear.selectOption('1995');
+await page.locator('#view_product_page_btn').click();
+}
+
+await expect(page.locator('.apphub_AppName').first()).toBeVisible();
+});
+
+test('TC-09: Agregar producto al carrito de compras', async ({ page }) => {
+  await page.goto('https://store.steampowered.com/app/550/Left_4_Dead_2/');
+
+  const addToCartBtn = page.locator('text=Add to Cart').first();
+  await addToCartBtn.waitFor({ state: 'visible' });
+  await addToCartBtn.click();
+
+  await page.goto('https://store.steampowered.com/cart/');
+  await expect(page).toHaveURL(/cart/);
+
+
+  await expect(page.locator('text=Shopping Cart').first()).toBeVisible();
+});
+test('TC-10: Eliminar producto del carrito', async ({ page }) => {
+  await page.goto('https://store.steampowered.com/app/550/Left_4_Dead_2/');
+  await page.locator('text=Add to Cart').first().click();
+  await page.goto('https://store.steampowered.com/cart/');
+
+  const removeBtn = page.locator('text=Remove').first();
+  await removeBtn.waitFor({ state: 'visible' });
+  await removeBtn.click();
+
+  await expect(page.locator('.cart_item')).toHaveCount(0);
+});
+test('TC-11: Navegación al formulario de Inicio de Sesión', async ({ page }) => {
+  await page.getByRole('link', { name: /login|sign in|iniciar sesión/i }).click();
+
+  await expect(page).toHaveURL(/login/);
+});
+
+test('TC-12: Validación de credenciales vacías en Login', async ({ page }) => {
+  await page.goto('https://store.steampowered.com/login/');
+  await page.getByRole('button', { name: /sign in/i }).click();
+  await expect(page).toHaveURL(/login/);
+});
+test('TC-13: Verificación de sección Hardware (Steam Deck)', async ({ page }) => {
+  await page.goto('https://store.steampowered.com/steamdeck/');
+  await expect(page).toHaveURL(/steamdeck/);
+});
+
+test('TC-14: Redirección correcta a la página de Soporte', async ({ page }) => {
+  await page.goto('https://store.steampowered.com/');
+  await Promise.all([
+    page.waitForURL(/help\.steampowered\.com/),
+    page.getByRole('link', { name: /support/i }).first().click()
+  ]);
+  await expect(page).toHaveURL(/help\.steampowered\.com/);
+});
+
+test('TC-15: Verificación del pie de página (Footer)', async ({ page }) => {
+  await page.goto('https://store.steampowered.com/');
+  const footer = page.locator('#footer, .footer, #store_footer').first();
+  await footer.scrollIntoViewIfNeeded();
+  await expect(footer).toContainText(/Valve Corporation/i);
+});
+
+
 
 });
